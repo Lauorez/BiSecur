@@ -15,15 +15,9 @@ Hörmann officially supported this gateway version until end of 2023 / beginning
 ![gateway image](gateway.webp)
 
 ## TODOs
-* [x] Create json output for machines. Improve documentation accordingly.
-* [x] Add retries. `status` command produces `PORT_ERROR` quite frequently while second try works fine.
-* [x] Improve token handling. Token is stored in `config.yaml` but it seems to be invalidated after a while. It should be renewed on demand.
-* [x] Create GitHub pipeline for releases
-* [x] Create new gateway user
-* [x] Delete gateway user
-* [x] Change password of a gateway user
 * [ ] Assign new door to the gateway
 * [ ] Delete assigned door from the gateway
+* [ ] Manage multiple doors with the same gateway in a single process 
 
 ## Usage
 ```
@@ -87,7 +81,8 @@ mqttpassword: ADD-YOUR-MQTT-PASSWORD
 mqttport: 8883
 mqttserver: ADD-YOUR-MQTT-SERVER
 mqttstricttlsvalidation: true
-mqttteleperiod: 5s
+mqttteleperiod: 15s
+mqttteleperiodfast: 5s
 mqtttls: true
 mqttusername: ADD-YOUR-MQTT-USERNAME
 password: ADD-YOUR-PASSWORD

@@ -97,6 +97,9 @@ func (ha *HomeAssistanceMqttClient) openDoor() error {
 	default:
 		ha.log.Infof("Unhandled direction in openDoor action: %s. Doing nothing.", direction)
 	}
+
+	ha.setRequestFastDootStatus()
+
 	return nil
 }
 
@@ -139,6 +142,8 @@ func (ha *HomeAssistanceMqttClient) closeDoor() error {
 		ha.log.Infof("Unhandled direction in closeDoor action: %s. Doing nothing.", direction)
 	}
 
+	ha.setRequestFastDootStatus()
+
 	return nil
 }
 
@@ -158,6 +163,8 @@ func (ha *HomeAssistanceMqttClient) stopDoor() error {
 	} else {
 		ha.log.Infof("Door is not moving. Nothing to stop. Current direction: %s", direction)
 	}
+
+	ha.setRequestFastDootStatus()
 
 	return nil
 }

@@ -40,14 +40,16 @@ type HomeAssistanceMqttClient struct {
 	mqttUserName           string
 	mqttPassword           string
 	mqttTelePeriod         time.Duration
+	mqttTelePeriodFast     time.Duration
 	devicePort             byte
 	log                    *logrus.Logger
 	mqttClient             mqtt.Client
+	requestFastUpdate      time.Time
 }
 
 func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac [6]byte, deviceUsername string, devicePassword string, host string, port int, token uint32, mqttServerName string, mqttClientId string,
 	mqttServerPort int, mqttServerTls bool, mqttServerTlsValidaton bool, mqttBaseTopic string,
-	mqttDeviceName string, mqttUserName string, mqttPassword string, mqttTelePeriod time.Duration, devicePort byte) (*HomeAssistanceMqttClient, error) {
+	mqttDeviceName string, mqttUserName string, mqttPassword string, mqttTelePeriod time.Duration, mqttTelePeriodFast time.Duration, devicePort byte) (*HomeAssistanceMqttClient, error) {
 
 	ha := &HomeAssistanceMqttClient{
 		localMac:               localMac,
@@ -67,8 +69,10 @@ func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac
 		mqttUserName:           mqttUserName,
 		mqttPassword:           mqttPassword,
 		mqttTelePeriod:         mqttTelePeriod,
+		mqttTelePeriodFast:     mqttTelePeriodFast,
 		devicePort:             devicePort,
 		log:                    log,
+		requestFastUpdate:      time.UnixMicro(0), // initial value must be in the past
 	}
 
 	return ha, nil
@@ -187,7 +191,13 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 		ha.log.Warnf("Tele period is too small. Set to %v", ha.mqttTelePeriod)
 	}
 
+	if ha.mqttTelePeriodFast < MinTelePeriod { // ensure minimum tele period to avoid flooding the Hormann gateway
+		ha.mqttTelePeriodFast = MinTelePeriod
+		ha.log.Warnf("Tele period when door might be moving is too small. Set to %v", ha.mqttTelePeriodFast)
+	}
+
 	ticker := time.NewTicker(ha.mqttTelePeriod)
+	tickerFast := time.NewTicker(ha.mqttTelePeriodFast)
 	done, _ := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
 
 out:
@@ -197,30 +207,56 @@ out:
 			ha.log.Infof("Exiting")
 			break out
 		case <-ticker.C:
-			ha.log.Tracef("Publish current door status")
-
-			startTs := time.Now()
-			direction, position, err := ha.getDoorStatus()
-			endTs := time.Now()
-			ha.log.Debugf("Get door status took %v", endTs.Sub(startTs))
-
+			err := ha.doorStatus()
 			if err != nil {
-				ha.log.Errorf("failed to get door status. %v", err)
+				ha.log.Errorf("failed to publish current door status. %v", err)
+				continue
+			}
+		case <-tickerFast.C:
+			if !ha.requestFastDootStatus() {
 				continue
 			}
 
-			state := utils.UNKNOWN
-			if position == 0 {
-				state = utils.CLOSED
-			} else if position > 0 {
-				state = utils.OPEN
-			}
-
-			err = ha.PublishCurrentDoorStatus(position, direction, state)
+			err := ha.doorStatus()
 			if err != nil {
-				ha.log.Errorf("failed to publish current door status. %v", err)
+				ha.log.Errorf("failed to publish current door status (fast). %v", err)
+				continue
 			}
 		}
+	}
+
+	return nil
+}
+
+func (ha *HomeAssistanceMqttClient) setRequestFastDootStatus() {
+	ha.requestFastUpdate = time.Now().Add(30 * time.Second) // request fast update for 30 seconds
+}
+
+func (ha *HomeAssistanceMqttClient) requestFastDootStatus() bool {
+	return ha.requestFastUpdate.After(time.Now()) // check if fast update timeout is still not reached
+}
+
+func (ha *HomeAssistanceMqttClient) doorStatus() error {
+	ha.log.Tracef("Publish current door status")
+
+	startTs := time.Now()
+	direction, position, err := ha.getDoorStatus()
+	endTs := time.Now()
+	ha.log.Debugf("Get door status took %v", endTs.Sub(startTs))
+	if err != nil {
+		return fmt.Errorf("failed to get door status. %v", err)
+	}
+
+	state := utils.UNKNOWN
+	if position == 0 {
+		state = utils.CLOSED
+	} else if position > 0 {
+		state = utils.OPEN
+	}
+
+	err = ha.PublishCurrentDoorStatus(position, direction, state)
+	if err != nil {
+		return fmt.Errorf("failed to publish current door status. %v", err)
 	}
 
 	return nil
@@ -276,7 +312,7 @@ func (ha *HomeAssistanceMqttClient) PublishDiscoveryMessage() error {
 	if mqttToken.Wait() && mqttToken.Error() != nil {
 		return fmt.Errorf("failed to publish discovery message. %v", mqttToken.Error())
 	}
-	
+
 	ha.log.Debugf("Published discovery message: %s", discoveryMsg)
 
 	return nil

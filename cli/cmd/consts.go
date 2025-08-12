@@ -23,6 +23,7 @@ const (
 	ArgMqttBaseTopicName           = "mqttBaseTopic"
 	ArgMqttDeviceNameName          = "mqttDeviceName"
 	ArgMqttTelePeriodName          = "mqttTelePeriod"
+	ArgMqttTelePeriodFastName      = "mqttTelePeriodFast"
 	UsersCmdUse                    = "users"
 	StatusCmdUse                   = "status"
 	SetStateCmdUse                 = "set-state"

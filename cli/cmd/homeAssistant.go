@@ -22,6 +22,7 @@ func init() {
 		mqttUserName           string
 		mqttPassword           string
 		mqttTelePeriod         time.Duration
+		mqttTelePeriodFast     time.Duration
 		devicePort             int
 	)
 
@@ -47,6 +48,7 @@ func init() {
 			mqttUserName = viper.GetString(ArgMqttUserNameName)
 			mqttPassword = viper.GetString(ArgMqttPasswordName)
 			mqttTelePeriod = viper.GetDuration(ArgMqttTelePeriodName)
+			mqttTelePeriodFast = viper.GetDuration(ArgMqttTelePeriodFastName)
 			devicePort = viper.GetInt(ArgDevicePortName)
 
 			mqttClientId := fmt.Sprintf("clientId_%s", deviceMac)
@@ -60,7 +62,7 @@ func init() {
 			ha, err := homeAssistant.NewHomeAssistanceMqttClient(
 				cli.Log, localMac, mac, username, password, host, port, token,
 				mqttServerName, mqttClientId, mqttServerPort, mqttServerTls, mqttServerTlsValidaton,
-				mqttBaseTopic, mqttDeviceName, mqttUserName, mqttPassword, mqttTelePeriod,
+				mqttBaseTopic, mqttDeviceName, mqttUserName, mqttPassword, mqttTelePeriod, mqttTelePeriodFast,
 				byte(devicePort),
 			)
 			if err != nil {
@@ -85,7 +87,8 @@ func init() {
 	haCmd.Flags().BoolVarP(&mqttServerTlsValidaton, ArgMqttStrictTlsValidationName, "i", true, "if false, skip server certificate validation")
 	haCmd.Flags().StringVarP(&mqttBaseTopic, ArgMqttBaseTopicName, "b", "halsecur", "MQTT topic")
 	haCmd.Flags().StringVarP(&mqttDeviceName, ArgMqttDeviceNameName, "n", "garage", "Name of the local device in MQTT messages")
-	haCmd.Flags().DurationVarP(&mqttTelePeriod, ArgMqttTelePeriodName, "e", 1*time.Second, "Frequency of device state publish")
+	haCmd.Flags().DurationVarP(&mqttTelePeriod, ArgMqttTelePeriodName, "e", 15*time.Second, "Frequency of device state publish")
+	haCmd.Flags().DurationVarP(&mqttTelePeriodFast, ArgMqttTelePeriodFastName, "f", 5*time.Second, "Frequency of device state publish when door might be moving")
 	haCmd.Flags().IntVar(&devicePort, ArgDevicePortName, 0, "Port number of the door")
 	flag.Parse()
 	err := viper.BindPFlags(haCmd.Flags())
