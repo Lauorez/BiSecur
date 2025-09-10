@@ -2,7 +2,7 @@
 
 **ABSOLUTELY NO WARRANTY! USE AT YOUR OWN RISK!**
 
-# Hörmann BiSecur Gateway CLI client and GoLang SDK
+# Hörmann BiSecur Gateway command line interface, Home Assistant integration and GoLang SDK 
 
 This command line client (CLI) and software developer kit (SDK) is able to communicate with your Hörmann BiSecur Gateway directly via IP connection.
 
