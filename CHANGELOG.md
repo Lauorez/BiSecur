@@ -6,11 +6,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [v2.2.1]
+
 ### Added
-- New release GitHub workflow added with a CHANGELOG.md.
+- Introduce CHANGELOG.md
 
 ### Changed
 - Release workflow changed to use goreleaser
+- updated tools: golang, golangci-lint, gosec
 
 ## [v2.2.0] - 2025-08-12
 
