@@ -37,4 +37,4 @@ build: env
 	CGO_ENABLED=0 go build -ldflags "-X 'bisecur/version.Version=?version?' -X 'bisecur/version.BuildDate=?date?'" -v -o ${DIST}${APPNAME} .
 
 build-docker: env build
-	docker build --build-arg VERSION=$(shell git describe --tags --always) -t bisecur/halsecur:latest -f Dockerfile ${DIST}
+	docker build --build-arg TARGETPLATFORM='./' --build-arg VERSION=$(shell git describe --tags --always) -t bisecur/halsecur:latest -f Dockerfile ${DIST}
