@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
-
+- Maintain an increased status report frequency while the door is in motion, regardless of the trigger source.
 
 ### Changed
 - fixed local docker build (build argument was missing)

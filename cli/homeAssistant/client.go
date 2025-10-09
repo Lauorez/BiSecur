@@ -7,13 +7,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/sirupsen/logrus"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -229,7 +230,7 @@ out:
 }
 
 func (ha *HomeAssistanceMqttClient) setRequestFastDootStatus() {
-	ha.requestFastUpdate = time.Now().Add(30 * time.Second) // request fast update for 30 seconds
+	ha.requestFastUpdate = time.Now().Add(15 * time.Second) // request fast update for 15 seconds
 }
 
 func (ha *HomeAssistanceMqttClient) requestFastDootStatus() bool {
@@ -245,6 +246,12 @@ func (ha *HomeAssistanceMqttClient) doorStatus() error {
 	ha.log.Debugf("Get door status took %v", endTs.Sub(startTs))
 	if err != nil {
 		return fmt.Errorf("failed to get door status. %v", err)
+	}
+
+	// Check if door is in motion
+	if direction == utils.OPENING || direction == utils.CLOSING {
+		// Maintain an increased status report frequency while the door is in motion, regardless of the trigger source.
+		ha.setRequestFastDootStatus()
 	}
 
 	state := utils.UNKNOWN
