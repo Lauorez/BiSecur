@@ -8,7 +8,7 @@ import (
 
 func Logout(localMac [6]byte, mac [6]byte, host string, port int, token uint32) error {
 	if token == 0 {
-		return fmt.Errorf("invalid token value: 0x%X", token)
+		return fmt.Errorf("invalid token value: 0x%X. Logout request ignored", token)
 	}
 
 	client := sdk.NewClient(cli.Log, localMac, mac, host, port, token)
