@@ -12,6 +12,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - Fixed local docker build (build argument was missing).
 
+## Fixed
+- Gateway rejects all commands with `PERMISSION_DENIED` error after a while even after a logout-login action.
+
 ## [v2.2.1]
 
 ### Added

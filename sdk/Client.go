@@ -4,9 +4,10 @@ import (
 	"bisecur/sdk/payload"
 	"bytes"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"net"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Client struct {
@@ -402,11 +403,12 @@ func (c *Client) GetTransition(portID byte) (*payload.HmGetTransitionResponse, e
 		return nil, fmt.Errorf("unexpected nil response value")
 	}
 
+	transitionResponse := response.Packet.payload.(*payload.HmGetTransitionResponse)
+
 	if !response.isResponseFor(tc) {
-		return nil, fmt.Errorf("received unexpected packet: %s", response)
+		return transitionResponse, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
-	transitionResponse := response.Packet.payload.(*payload.HmGetTransitionResponse)
 	return transitionResponse, nil
 }
 

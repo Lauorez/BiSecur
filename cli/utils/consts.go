@@ -11,4 +11,6 @@ const (
 	UNKNOWN = "unknown"
 
 	HomeAssistantStatusTopic = "homeassistant/status"
+
+	RetryCount = 3
 )

@@ -3,11 +3,13 @@ package cmd
 import (
 	"bisecur/cli"
 	"bisecur/cli/bisecur"
+	"bisecur/cli/utils"
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 	"time"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -37,7 +39,7 @@ func loginCmdFunc() error {
 	username := viper.GetString(ArgNameUsername)
 	password := viper.GetString(ArgNamePassword)
 
-	mac, err := cli.ParesMacString(deviceMac)
+	mac, err := utils.ParesMacString(deviceMac)
 	if err != nil {
 		return err
 	}

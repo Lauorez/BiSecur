@@ -2,6 +2,7 @@ package bisecur
 
 import (
 	"bisecur/cli"
+	"bisecur/cli/utils"
 	"bisecur/sdk"
 )
 
@@ -20,7 +21,7 @@ func GetName(localMac, mac [6]byte, host string, port int, token uint32) (string
 	}()
 
 	var name string
-	err = Retry(func() error {
+	err = utils.Retry(utils.RetryCount, func() error {
 		var err2 error
 		name, err2 = client.GetName()
 		return err2

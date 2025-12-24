@@ -2,7 +2,7 @@ package users
 
 import (
 	"bisecur/cli"
-	"bisecur/cli/bisecur"
+	"bisecur/cli/utils"
 	"bisecur/sdk"
 )
 
@@ -21,7 +21,7 @@ func ListUsers(localMac [6]byte, mac [6]byte, host string, port int, token uint3
 	}()
 
 	var users *sdk.Users
-	err = bisecur.Retry(func() error {
+	err = utils.Retry(utils.RetryCount, func() error {
 		var err2 error
 		users, err2 = client.GetUsers()
 		return err2

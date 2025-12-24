@@ -2,7 +2,7 @@ package users
 
 import (
 	"bisecur/cli"
-	"bisecur/cli/bisecur"
+	"bisecur/cli/utils"
 	"bisecur/sdk"
 )
 
@@ -20,7 +20,7 @@ func UserRemove(localMac [6]byte, mac [6]byte, host string, port int, token uint
 		}
 	}()
 
-	err = bisecur.Retry(func() error {
+	err = utils.Retry(utils.RetryCount, func() error {
 		err2 := client.RemoveUser(userId)
 		return err2
 	})
