@@ -208,6 +208,10 @@ out:
 			ha.log.Infof("Exiting")
 			break out
 		case <-ticker.C:
+			if ha.requestFastDootStatus() {
+				continue
+			}
+
 			err := ha.doorStatus()
 			if err != nil {
 				ha.log.Errorf("failed to publish current door status. %v", err)
