@@ -34,7 +34,7 @@ func (ha *HomeAssistanceMqttClient) forceReLogin() error {
 
 	ha.token, err = bisecur.Login(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.deviceUsername, ha.devicePassword)
 	if err != nil {
-		return fmt.Errorf("failed to auto login. %v", err)
+		return fmt.Errorf("auto login failed. %v", err)
 	}
 
 	ha.tokenCreated = time.Now() // note when token was received
@@ -55,7 +55,7 @@ func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
 
 		err := ha.autoLoginBisecur()
 		if err != nil {
-			return fmt.Errorf("failed to auto login. %v", err)
+			return fmt.Errorf("auto login failed. %v", err)
 		}
 
 		err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.devicePort, ha.token)
@@ -195,7 +195,7 @@ func (ha *HomeAssistanceMqttClient) getDoorStatus() (direction string, position 
 	*/
 	err = ha.autoLoginBisecur()
 	if err != nil {
-		return utils.UNKNOWN, 0, fmt.Errorf("failed to auto login. %v", err)
+		return utils.UNKNOWN, 0, fmt.Errorf("auto login failed. %v", err)
 	}
 
 	var status *payload.HmGetTransitionResponse

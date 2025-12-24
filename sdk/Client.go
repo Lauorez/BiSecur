@@ -403,10 +403,13 @@ func (c *Client) GetTransition(portID byte) (*payload.HmGetTransitionResponse, e
 		return nil, fmt.Errorf("unexpected nil response value")
 	}
 
-	transitionResponse := response.Packet.payload.(*payload.HmGetTransitionResponse)
+	transitionResponse, ok := response.Packet.payload.(*payload.HmGetTransitionResponse)
+	if !ok {
+		return nil, fmt.Errorf("received unexpected packet (typecast failed): %s", response)
+	}
 
 	if !response.isResponseFor(tc) {
-		return transitionResponse, fmt.Errorf("received unexpected packet: %s", response)
+		return transitionResponse, fmt.Errorf("received unexpected packet (not the response waiting for): %s", response)
 	}
 
 	return transitionResponse, nil
