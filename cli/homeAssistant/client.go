@@ -1,7 +1,6 @@
 package homeAssistant
 
 import (
-	"bisecur/cli/bisecur"
 	"bisecur/cli/homeAssistant/mockDoor"
 	"bisecur/cli/utils"
 	"context"
@@ -167,7 +166,7 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 
 		ha.log.Infof("Disconnected from MQTT server")
 
-		err = bisecur.Logout(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.token)
+		err = ha.LogoutBisecur()
 		if err != nil {
 			ha.log.Errorf("Error logging out of bisecur")
 		} else {

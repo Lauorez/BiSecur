@@ -3,9 +3,11 @@ package cmd
 import (
 	"bisecur/cli"
 	"bisecur/cli/bisecur/users"
+	"bisecur/cli/utils"
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 func init() {
@@ -25,7 +27,7 @@ func init() {
 			token := viper.GetUint32(ArgNameToken)
 			userId := viper.GetInt(ArgNameUserId)
 
-			mac, err := cli.ParesMacString(deviceMac)
+			mac, err := utils.ParesMacString(deviceMac)
 			if err != nil {
 				cli.Log.Fatalf("%v", err)
 				os.Exit(1)

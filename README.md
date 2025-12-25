@@ -28,7 +28,7 @@ Usage:
   halsecur [command]
 
 Available Commands:
-  Logout      
+  logout      
   completion  Generate the autocompletion script for the specified shell
   discover    Discover Hörmann BiSecur gateways on the local network
   get-name    Queries the name of the Hörmann BiSecur gateway

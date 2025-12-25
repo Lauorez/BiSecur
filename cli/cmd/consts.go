@@ -29,7 +29,7 @@ const (
 	SetStateCmdUse                 = "set-state"
 	GroupsCmdName                  = "groups"
 	LoginCmdName                   = "login"
-	LogoutCmdName                  = "Logout"
+	LogoutCmdName                  = "logout"
 	PingCmdName                    = "ping"
 	HomeAssistantCmdName           = "ha"
 	ArgDoPeriodicRequests          = "doPeriodicRequests"

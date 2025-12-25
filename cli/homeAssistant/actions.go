@@ -4,28 +4,58 @@ import (
 	"bisecur/cli"
 	"bisecur/cli/bisecur"
 	"bisecur/cli/utils"
+	"bisecur/sdk/payload"
 	"fmt"
+	"strings"
 	"time"
 )
 
 func (ha *HomeAssistanceMqttClient) autoLoginBisecur() error {
 	if ha.tokenCreated.Add(bisecur.TokenExpirationTime).Before(time.Now()) {
-		cli.Log.Infof("Token expired. Logging in...")
-
-		var err error
-
-		err = bisecur.Logout(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.token)
-		if err != nil {
-			ha.log.Warnf("failed to logout. %v", err)
-		}
-
-		ha.token, err = bisecur.Login(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.deviceUsername, ha.devicePassword)
-		if err != nil {
-			return fmt.Errorf("failed to auto login. %v", err)
-		}
-
-		ha.tokenCreated = time.Now() // note when token was received
+		ha.log.Info("Token expired.")
+		return ha.forceReLogin()
 	}
+
+	return nil
+}
+
+func (ha *HomeAssistanceMqttClient) LogoutBisecur() error {
+	cli.Log.Infof("Logging out from the gateway...")
+
+	err := bisecur.Logout(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.token)
+	if err != nil {
+		return err
+	}
+
+	// Note that the token has been invalidated
+	ha.token = 0
+	ha.tokenCreated = time.UnixMicro(0)
+
+	return nil
+}
+
+func (ha *HomeAssistanceMqttClient) forceReLogin() error {
+	cli.Log.Infof("Logging in to the gateway...")
+
+	var err error
+
+	err = bisecur.Logout(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.token)
+	if err != nil {
+		ha.log.Errorf("failed to logout. %v", err)
+	}
+	// clear token and the timestamp of the token after the successful logout
+	ha.token = 0
+	ha.tokenCreated = time.UnixMicro(0)
+
+	// Not sure, this is really needed, but since I know Hormann BS gateway can become crazy if it gets overloaded...
+	time.Sleep(2 * time.Second)
+
+	ha.token, err = bisecur.Login(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.deviceUsername, ha.devicePassword)
+	if err != nil {
+		return fmt.Errorf("login failed. %v", err)
+	}
+
+	ha.tokenCreated = time.Now() // note when token was received
 
 	return nil
 }
@@ -43,7 +73,7 @@ func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
 
 		err := ha.autoLoginBisecur()
 		if err != nil {
-			return fmt.Errorf("failed to auto login. %v", err)
+			return fmt.Errorf("auto login failed. %v", err)
 		}
 
 		err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.devicePort, ha.token)
@@ -183,10 +213,26 @@ func (ha *HomeAssistanceMqttClient) getDoorStatus() (direction string, position 
 	*/
 	err = ha.autoLoginBisecur()
 	if err != nil {
-		return utils.UNKNOWN, 0, fmt.Errorf("failed to auto login. %v", err)
+		return utils.UNKNOWN, 0, fmt.Errorf("auto login failed. %v", err)
 	}
 
-	status, err := bisecur.GetStatus(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.devicePort, ha.token)
+	var status *payload.HmGetTransitionResponse
+	err = utils.Retry(utils.RetryCount, func() error {
+		var err2 error
+		status, err2 = bisecur.GetStatus(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.devicePort, ha.token)
+
+		if strings.ToUpper(status.Payload.String()) == "PERMISSION_DENIED" {
+			// Does it make sense to force relogin after a PERMISSION_DENIED error?
+			time.Sleep(2 * time.Second)
+			err3 := ha.forceReLogin()
+			if err3 != nil {
+				return fmt.Errorf("error while re-login after a PERMISSION_DENIED error. %v. %v", err2, err3)
+			}
+		}
+
+		return err2
+	})
+
 	if err != nil {
 		return utils.UNKNOWN, 0, fmt.Errorf("failed to get door status. %v", err)
 	}

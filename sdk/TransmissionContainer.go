@@ -160,14 +160,24 @@ func (tc *TransmissionContainer) isResponse() bool {
 	return (tc.Packet.CommandID & RESPONSE_MASK) == RESPONSE_MASK
 }
 
-func (tc *TransmissionContainer) isResponseFor(request *TransmissionContainer) bool {
+func (tc *TransmissionContainer) isResponseFor(request *TransmissionContainer) error {
 	response := tc
+
+	if response.Packet.TAG != request.Packet.TAG {
+		return fmt.Errorf("different packet TAG found. Response TAG: %d Request TAG (expected): %d", response.Packet.TAG, request.Packet.TAG)
+	}
 
 	switch request.Packet.getCommandID() {
 	case COMMANDID_SET_STATE:
-		return response.Packet.TAG == request.Packet.TAG && response.Packet.getCommandID() == COMMANDID_HM_GET_TRANSITION && response.isResponse()
+		if response.Packet.getCommandID() != COMMANDID_HM_GET_TRANSITION && response.isResponse() {
+			return fmt.Errorf("received unexpected packet Command ID. Response Command ID: %d, Request (expected) Command ID: %d", response, request)
+		}
+		return nil
 	default:
-		return response.Packet.TAG == request.Packet.TAG && response.Packet.getCommandID() == request.Packet.getCommandID() && response.isResponse()
+		if response.Packet.getCommandID() != request.Packet.getCommandID() && response.isResponse() {
+			return fmt.Errorf("received unexpected packet Command ID. Response Command ID: %d, Request (expected) Command ID: %d", response, request)
+		}
+		return nil
 	}
 }
 

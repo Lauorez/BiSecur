@@ -20,9 +20,5 @@ func Login(localMac [6]byte, mac [6]byte, host string, port int, username string
 	}()
 
 	err = client.Login(username, password)
-	if err != nil {
-		return 0, err
-	}
-
-	return client.GetToken(), nil
+	return client.GetToken(), err
 }

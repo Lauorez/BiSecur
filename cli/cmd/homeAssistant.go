@@ -3,6 +3,7 @@ package cmd
 import (
 	"bisecur/cli"
 	"bisecur/cli/homeAssistant"
+	"bisecur/cli/utils"
 	"flag"
 	"fmt"
 	"os"
@@ -56,7 +57,7 @@ func init() {
 
 			mqttClientId := fmt.Sprintf("clientId_%s", deviceMac)
 
-			mac, err := cli.ParesMacString(deviceMac)
+			mac, err := utils.ParesMacString(deviceMac)
 			if err != nil {
 				cli.Log.Fatalf("%v", err)
 				os.Exit(1)

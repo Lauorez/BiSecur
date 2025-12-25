@@ -2,6 +2,7 @@ package bisecur
 
 import (
 	"bisecur/cli"
+	"bisecur/cli/utils"
 	"bisecur/sdk"
 )
 
@@ -19,7 +20,7 @@ func UserPasswordChange(localMac [6]byte, mac [6]byte, host string, port int, to
 		}
 	}()
 
-	err = Retry(func() error {
+	err = utils.Retry(utils.RetryCount, func() error {
 		err2 := client.PasswordChange(userId, newPassword)
 		return err2
 	})

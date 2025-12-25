@@ -2,6 +2,7 @@ package bisecur
 
 import (
 	"bisecur/cli"
+	"bisecur/cli/utils"
 	"bisecur/sdk"
 	"bisecur/sdk/payload"
 )
@@ -21,14 +22,14 @@ func GetStatus(localMac [6]byte, mac [6]byte, host string, port int, devicePort 
 	}()
 
 	var status *payload.HmGetTransitionResponse
-	err = Retry(func() error {
+	err = utils.Retry(utils.RetryCount, func() error {
 		var err2 error
 		status, err2 = client.GetTransition(devicePort)
 		return err2
 	})
 
 	if err != nil {
-		return nil, err
+		return status, err
 	}
 
 	return status, nil
@@ -48,7 +49,7 @@ func SetState(localMac [6]byte, mac [6]byte, host string, port int, devicePort b
 		}
 	}()
 
-	err = Retry(func() error {
+	err = utils.Retry(utils.RetryCount, func() error {
 		err2 := client.SetState(devicePort)
 		return err2
 	})

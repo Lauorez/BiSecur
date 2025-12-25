@@ -4,9 +4,10 @@ import (
 	"bisecur/cli"
 	"bisecur/cli/bisecur"
 	"fmt"
+	"time"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"time"
 )
 
 func loginRequired(name string) bool {
@@ -23,7 +24,7 @@ func loginRequired(name string) bool {
 
 func autoLogin(cmd *cobra.Command, args []string) error {
 	if !loginRequired(cmd.Use) {
-		cli.Log.Debugf("Login not required. Don't need to auto login.")
+		cli.Log.Debugf("Login not required. Don't need to auto login for this command.")
 		return nil
 	}
 

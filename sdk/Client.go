@@ -4,9 +4,10 @@ import (
 	"bisecur/sdk/payload"
 	"bytes"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"net"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Client struct {
@@ -165,8 +166,9 @@ func (c *Client) Ping() (int64, int64, error) {
 		return sendTimestamp, receivedTimestamp, fmt.Errorf("unexpected nil responseTc value")
 	}
 
-	if !responseTc.isResponseFor(requestTc) {
-		return sendTimestamp, receivedTimestamp, fmt.Errorf("received unexpected packet. %v", responseTc)
+	err = responseTc.isResponseFor(requestTc)
+	if err != nil {
+		return sendTimestamp, receivedTimestamp, fmt.Errorf("received unexpected packet. %v. %v", responseTc, err)
 	}
 
 	return sendTimestamp, receivedTimestamp, nil
@@ -190,7 +192,7 @@ func (c *Client) GetMac() ([6]byte, error) {
 		return deviceMac, fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
+	if response.isResponseFor(tc) != nil {
 		return deviceMac, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
@@ -211,7 +213,7 @@ func (c *Client) GetName() (string, error) {
 		return "", fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
+	if response.isResponseFor(tc) != nil {
 		return "", fmt.Errorf("received unexpected packet: %s", response)
 	}
 
@@ -232,7 +234,7 @@ func (c *Client) GetGroups() (*Groups, error) {
 		return nil, fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
+	if response.isResponseFor(tc) != nil {
 		return nil, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
@@ -257,7 +259,7 @@ func (c *Client) GetGroupsForUser(userID byte) (*Groups, error) {
 		return nil, fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
+	if response.isResponseFor(tc) != nil {
 		return nil, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
@@ -281,7 +283,7 @@ func (c *Client) GetUsers() (*Users, error) {
 		return nil, fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
+	if response.isResponseFor(tc) != nil {
 		return nil, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
@@ -306,7 +308,7 @@ func (c *Client) GetValues() (*Values, error) {
 		return nil, fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
+	if response.isResponseFor(tc) != nil {
 		return nil, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
@@ -338,11 +340,17 @@ func (c *Client) Login(username string, password string) error {
 		return fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
-		return fmt.Errorf("received unexpected packet: %s", response)
+	err = response.isResponseFor(tc)
+	if err != nil {
+		c.token = response.Packet.Token // TODO I don't like this logic but need to test something. Maybe this can be just simply deleted.
+		return fmt.Errorf("received unexpected packet (not the response waiting for). %s", response)
 	}
 
-	loginResponse := response.Packet.payload.(*payload.LoginResponse)
+	loginResponse, ok := response.Packet.payload.(*payload.LoginResponse)
+	if !ok {
+		return fmt.Errorf("received unexpected packet (typecast failed): %s", response)
+	}
+
 	c.token = loginResponse.GetToken()
 	c.senderID = loginResponse.GetSenderID()
 
@@ -381,7 +389,7 @@ func (c *Client) SetState(portID byte) error {
 		return fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
+	if response.isResponseFor(tc) != nil {
 		return fmt.Errorf("received unexpected packet: %s", response)
 	}
 
@@ -402,11 +410,15 @@ func (c *Client) GetTransition(portID byte) (*payload.HmGetTransitionResponse, e
 		return nil, fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
-		return nil, fmt.Errorf("received unexpected packet: %s", response)
+	transitionResponse, ok := response.Packet.payload.(*payload.HmGetTransitionResponse)
+	if !ok {
+		return nil, fmt.Errorf("received unexpected packet (typecast failed): %s", response)
 	}
 
-	transitionResponse := response.Packet.payload.(*payload.HmGetTransitionResponse)
+	if response.isResponseFor(tc) != nil {
+		return transitionResponse, fmt.Errorf("received unexpected packet (not the response waiting for): %s", response)
+	}
+
 	return transitionResponse, nil
 }
 
@@ -421,8 +433,9 @@ func (c *Client) AddUser(userName string, password string) (userId byte, err err
 		return 0, fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
-		return 0, fmt.Errorf("received unexpected packet: %s", response)
+	err = response.isResponseFor(tc)
+	if err != nil {
+		return 0, fmt.Errorf("received unexpected packet: %s. %v", response, err)
 	}
 
 	transitionResponse := response.Packet.payload.(*payload.AddUserResponse)
@@ -441,7 +454,7 @@ func (c *Client) RemoveUser(userId byte) error {
 		return fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
+	if response.isResponseFor(tc) != nil {
 		return fmt.Errorf("received unexpected packet: %s", response)
 	}
 
@@ -464,7 +477,7 @@ func (c *Client) PasswordChange(userId byte, newPassword string) error {
 		return fmt.Errorf("unexpected nil response value")
 	}
 
-	if !response.isResponseFor(tc) {
+	if response.isResponseFor(tc) != nil {
 		return fmt.Errorf("received unexpected packet: %s", response)
 	}
 

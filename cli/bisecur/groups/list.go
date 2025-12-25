@@ -2,7 +2,7 @@ package groups
 
 import (
 	"bisecur/cli"
-	"bisecur/cli/bisecur"
+	"bisecur/cli/utils"
 	"bisecur/sdk"
 )
 
@@ -21,7 +21,7 @@ func ListGroups(localMac [6]byte, mac [6]byte, host string, port int, token uint
 	}()
 
 	var groups *sdk.Groups
-	err = bisecur.Retry(func() error {
+	err = utils.Retry(utils.RetryCount, func() error {
 		var err2 error
 		groups, err2 = client.GetGroups()
 		return err2
