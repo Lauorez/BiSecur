@@ -8,17 +8,17 @@ import (
 
 func ListGroups(localMac [6]byte, mac [6]byte, host string, port int, token uint32) (*sdk.Groups, error) {
 	client := sdk.NewClient(cli.Log, localMac, mac, host, port, token)
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			cli.Log.Errorf("%v", err2)
+		}
+	}()
+
 	err := client.Open()
 	if err != nil {
 		return nil, err
 	}
-
-	defer func() {
-		err2 := client.Close()
-		if err2 != nil {
-			cli.Log.Errorf("%v", err)
-		}
-	}()
 
 	var groups *sdk.Groups
 	err = utils.Retry(utils.RetryCount, func() error {

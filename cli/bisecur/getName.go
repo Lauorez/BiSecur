@@ -8,17 +8,17 @@ import (
 
 func GetName(localMac, mac [6]byte, host string, port int, token uint32) (string, error) {
 	client := sdk.NewClient(cli.Log, localMac, mac, host, port, token)
-	err := client.Open()
-	if err != nil {
-		return "", err
-	}
-
 	defer func() {
 		err2 := client.Close()
 		if err2 != nil {
 			cli.Log.Fatalf("%v", err2)
 		}
 	}()
+
+	err := client.Open()
+	if err != nil {
+		return "", err
+	}
 
 	var name string
 	err = utils.Retry(utils.RetryCount, func() error {

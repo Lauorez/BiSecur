@@ -8,17 +8,17 @@ import (
 
 func Ping(localMac [6]byte, mac [6]byte, host string, port int, count int, delay time.Duration, token uint32) error {
 	client := sdk.NewClient(cli.Log, localMac, mac, host, port, token)
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			cli.Log.Errorf("%v", err2)
+		}
+	}()
+
 	err := client.Open()
 	if err != nil {
 		return err
 	}
-
-	defer func() {
-		err2 := client.Close()
-		if err2 != nil {
-			cli.Log.Errorf("%v", err)
-		}
-	}()
 
 	received := 0
 	for i := 0; i < count; i++ {

@@ -14,6 +14,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Add `doPeriodicRequests` option to Home Assistant integration
 - Perform Hormann `logout` when terminating Home Assistant integration process
 
+### Fixed
+- Fixed potential resource leak
+
 ## [v2.2.1]
 
 ### Added
