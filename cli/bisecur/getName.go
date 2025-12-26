@@ -1,35 +1,14 @@
 package bisecur
 
 import (
-	"bisecur/cli"
-	"bisecur/cli/utils"
 	"bisecur/sdk"
 )
 
 func GetName(localMac, mac [6]byte, host string, port int, token uint32) (string, error) {
-	client := sdk.NewClient(cli.Log, localMac, mac, host, port, token)
-	defer func() {
-		err2 := client.Close()
-		if err2 != nil {
-			cli.Log.Fatalf("%v", err2)
-		}
-	}()
-
-	err := client.Open()
-	if err != nil {
-		return "", err
-	}
-
 	var name string
-	err = utils.Retry(utils.RetryCount, func() error {
+	return name, Generic(localMac, mac, host, port, token, func(client *sdk.Client) error {
 		var err2 error
 		name, err2 = client.GetName()
 		return err2
 	})
-
-	if err != nil {
-		return "", err
-	}
-
-	return name, nil
 }

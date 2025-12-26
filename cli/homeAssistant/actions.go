@@ -6,7 +6,6 @@ import (
 	"bisecur/cli/utils"
 	"bisecur/sdk/payload"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -201,9 +200,9 @@ func (ha *HomeAssistanceMqttClient) stopDoor() error {
 
 func (ha *HomeAssistanceMqttClient) getDoorStatus() (direction string, position int, err error) {
 	/*
-		status="{\"StateInPercent\":0,\"DesiredStateInPercent\":0,\"Error\":false,\"AutoClose\":false,\"DriveTime\":0,
+		status="{\"StateInPercent\":0,\"DesiredStateInPercent\":0,\"ErrorResponse\":false,\"AutoClose\":false,\"DriveTime\":0,
 		\"Gk\":257,\"Hcp\":{\"PositionOpen\":false,\"PositionClose\":true,\"OptionRelais\":false,\"LightBarrier\":false,
-		\"Error\":false,\"DrivingToClose\":false,\"Driving\":false,\"HalfOpened\":false,\"ForecastLeadTime\":false,
+		\"ErrorResponse\":false,\"DrivingToClose\":false,\"Driving\":false,\"HalfOpened\":false,\"ForecastLeadTime\":false,
 		\"Learned\":true,\"NotReferenced\":false},\"Exst\":\"AAAAAAAAAAA=\",\"Time\":\"2025-04-28T17:41:02.979836814+02:00\"}"
 	*/
 	/*
@@ -217,11 +216,11 @@ func (ha *HomeAssistanceMqttClient) getDoorStatus() (direction string, position 
 	}
 
 	var status *payload.HmGetTransitionResponse
-	err = utils.Retry(utils.RetryCount, func() error {
+	err = utils.RetryAlways(utils.RetryCount, func() error {
 		var err2 error
 		status, err2 = bisecur.GetStatus(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.devicePort, ha.token)
 
-		if strings.ToUpper(status.Payload.String()) == "PERMISSION_DENIED" {
+		if err2.Error() == "PERMISSION_DENIED" { // TODO don't like string comparisons so should be refactored somehow while relogin also should be make more generic (think of other commands)
 			// Does it make sense to force relogin after a PERMISSION_DENIED error?
 			time.Sleep(2 * time.Second)
 			err3 := ha.forceReLogin()
