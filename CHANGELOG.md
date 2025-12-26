@@ -8,13 +8,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 - Maintain an increased status report frequency while the door is in motion, regardless of the trigger source.
-
-### Changed
-- Fixed local docker build (build argument was missing).
 - Add `doPeriodicRequests` option to Home Assistant integration
 - Perform Hormann `logout` when terminating Home Assistant integration process
 
+### Changed
+
 ### Fixed
+- Fixed local docker build (build argument was missing).
 - Fixed potential resource leak
 
 ## [v2.2.1]
