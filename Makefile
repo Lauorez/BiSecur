@@ -14,7 +14,6 @@ ifeq ($(OS),Windows_NT)
 	EXE := .exe
 	DEVNULL := NUL
 
-	# Use cmd built-ins / Windows tools
 	MKDIR_P = if not exist "$(DIST)" mkdir "$(DIST)"
 	RM_RF   = if exist "$(DIST)" rmdir /S /Q "$(DIST)"
 	WHERE   = where
@@ -32,7 +31,7 @@ OUT := $(DIST)/$(APPNAME)$(EXE)
 # --- Targets ---
 .PHONY: all env clean lint-env lint lint-fix test test-short build build-linux build-docker
 
-all: clean build build-linux
+all: clean build
 
 env:
 	@$(MKDIR_P)
@@ -59,19 +58,20 @@ test: test-short
 test-short:
 	go test $(VENDOR) -race -short ./...
 
-build: env
-ifeq ($(OS),Windows_NT)
-	@set CGO_ENABLED=0&& go build -ldflags "$(LDFLAGS)" -v -o "$(OUT)" .
-else
-	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -v -o "$(OUT)" .
-endif
+build: env build-linux build-windows
 
 build-linux: env
 ifeq ($(OS),Windows_NT)
-
 	@set CGO_ENABLED=0&& @set GOARCH=amd64&& @set GOOS=linux&& go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)" .
 else
-	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)" .
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)" .
+endif
+
+build-windows: env
+ifeq ($(OS),Windows_NT)
+	@set CGO_ENABLED=0&& @set GOARCH=amd64&& @set GOOS=windows&& go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)$(EXE)" .
+else
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)$(EXE)" .
 endif
 
 build-docker: env build
