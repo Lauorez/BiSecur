@@ -11,22 +11,18 @@ ifeq ($(OS),Windows_NT)
 	SHELL := cmd.exe
 	SHELLFLAGS := /C
 
-	EXE := .exe
 	DEVNULL := NUL
 
 	MKDIR_P = if not exist "$(DIST)" mkdir "$(DIST)"
 	RM_RF   = if exist "$(DIST)" rmdir /S /Q "$(DIST)"
 	WHERE   = where
 else
-	EXE :=
 	DEVNULL := /dev/null
 
 	MKDIR_P = mkdir -p "$(DIST)"
 	RM_RF   = rm -rf "$(DIST)"
 	WHERE   = which
 endif
-
-OUT := $(DIST)/$(APPNAME)$(EXE)
 
 # --- Targets ---
 .PHONY: all env clean lint-env lint lint-fix test test-short build build-linux build-docker
@@ -69,9 +65,9 @@ endif
 
 build-windows: env
 ifeq ($(OS),Windows_NT)
-	@set CGO_ENABLED=0&& @set GOARCH=amd64&& @set GOOS=windows&& go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)$(EXE)" .
+	@set CGO_ENABLED=0&& @set GOARCH=amd64&& @set GOOS=windows&& go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME).exe" .
 else
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)$(EXE)" .
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME).exe" .
 endif
 
 build-docker: env build
