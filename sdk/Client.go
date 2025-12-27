@@ -412,6 +412,10 @@ func (c *Client) GetTransition(portID byte) (*payload.HmGetTransitionResponse, e
 
 	transitionResponse, ok := response.Packet.payload.(*payload.HmGetTransitionResponse)
 	if !ok {
+		errorResponse, isErrorResponse := response.Packet.payload.(*payload.ErrorResponse)
+		if isErrorResponse {
+			return nil, errorResponse
+		}
 		return nil, fmt.Errorf("received unexpected packet (typecast failed): %s", response)
 	}
 

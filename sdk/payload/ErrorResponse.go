@@ -25,37 +25,46 @@ const (
 	ERROR_ADAPTER_BUSY        = 19
 )
 
-type Error struct {
+type ErrorResponse struct {
 	Payload
 }
 
 func DecodeErrorPayload(payloadBytes []byte) (PayloadInterface, error) {
-	return &Error{
+	return &ErrorResponse{
 		Payload{
 			data: payloadBytes, // error code
 		},
 	}, nil
 }
 
-func (p *Error) Encode() []byte {
+func (p *ErrorResponse) Encode() []byte {
 	encodedBytes := make([]byte, 2)
 	hex.Encode(encodedBytes, p.ToByteArray())
 	return encodedBytes
 }
 
 func ErrorPayload(errorCode byte) PayloadInterface {
-	return &Error{
+	return &ErrorResponse{
 		Payload{
 			data: []byte{errorCode},
 		},
 	}
 }
 
-func (e *Error) GetErrorCode() byte {
+func (e *ErrorResponse) GetErrorCode() byte {
 	return e.ToByteArray()[0]
 }
 
-func (e *Error) String() string {
+func (e *ErrorResponse) Equal(other *ErrorResponse) bool {
+	return e.GetErrorCode() == other.GetErrorCode()
+}
+
+// Implement error interface
+func (e *ErrorResponse) Error() string {
+	return e.String()
+}
+
+func (e *ErrorResponse) String() string {
 	switch e.GetErrorCode() {
 	case ERROR_COMMAND_NOT_FOUND:
 		return "COMMAND_NOT_FOUND"

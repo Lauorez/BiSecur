@@ -7,36 +7,25 @@ import (
 )
 
 func Ping(localMac [6]byte, mac [6]byte, host string, port int, count int, delay time.Duration, token uint32) error {
-	client := sdk.NewClient(cli.Log, localMac, mac, host, port, token)
-	defer func() {
-		err2 := client.Close()
-		if err2 != nil {
-			cli.Log.Errorf("%v", err2)
-		}
-	}()
+	return Generic(localMac, mac, host, port, token, func(client *sdk.Client) error {
+		received := 0
+		for i := 0; i < count; i++ {
+			sentTimestamp, receivedTimestamp, err := client.Ping()
 
-	err := client.Open()
-	if err != nil {
-		return err
-	}
+			if err != nil {
+				cli.Log.Errorf("%v", err)
+				continue
+			}
 
-	received := 0
-	for i := 0; i < count; i++ {
-		sentTimestamp, receivedTimestamp, err := client.Ping()
+			received = received + 1
+			rtt := receivedTimestamp - sentTimestamp
+			cli.Log.Infof("Response %d of %d received in %d ms", received, count, rtt)
 
-		if err != nil {
-			cli.Log.Errorf("%v", err)
-			continue
+			if i < count {
+				time.Sleep(delay)
+			}
 		}
 
-		received = received + 1
-		rtt := receivedTimestamp - sentTimestamp
-		cli.Log.Infof("Response %d of %d received in %d ms", received, count, rtt)
-
-		if i < count {
-			time.Sleep(delay)
-		}
-	}
-
-	return nil
+		return nil
+	})
 }
