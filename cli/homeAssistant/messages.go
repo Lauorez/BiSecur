@@ -5,17 +5,21 @@ import (
 	"fmt"
 )
 
-func (ha *HomeAssistanceMqttClient) getDiscoveryMessage() (string, error) {
-	name := ha.getUniqueObjectId()
-	uniqueId := ha.getUniqueObjectId()
-	commandTopic := ha.getSetPositionTopic()
-	positionTopic := ha.getPositionTopicName()
+func (ha *HomeAssistanceMqttClient) getDiscoveryMessage(devicePort int) (string, error) {
+	name := ha.getUniqueObjectId(devicePort)
+	uniqueId := ha.getUniqueObjectId(devicePort)
+	device_class := `"device_class": "garage",`
+	if !ha.doorStatusSupported {
+		device_class = ""
+	}
+	commandTopic := ha.getSetPositionTopic(devicePort)
+	positionTopic := ha.getPositionTopicName(devicePort)
 
 	messageTemplate := `
 			{
 			"name": "%s",
 			"unique_id": "%s",
-			"device_class": "garage",
+			%s
 			"command_topic": "%s",
 			"position_topic": "%s",
 			"device": {
@@ -27,7 +31,7 @@ func (ha *HomeAssistanceMqttClient) getDiscoveryMessage() (string, error) {
 			"payload_not_available": "%s"
 			}`
 
-	message := fmt.Sprintf(messageTemplate, name, uniqueId, commandTopic, positionTopic, uniqueId, name, ha.getAvailabilityTopic(), ha.getAvabilityMessage(true), ha.getAvabilityMessage(false))
+	message := fmt.Sprintf(messageTemplate, name, uniqueId, device_class, commandTopic, positionTopic, uniqueId, name, ha.getAvailabilityTopic(devicePort), ha.getAvabilityMessage(true), ha.getAvabilityMessage(false))
 	return message, nil
 }
 
