@@ -94,14 +94,6 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 			// must not block
 		}
 
-		connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-			ha.log.Infof("Connected")
-		}
-
-		connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-			ha.log.Errorf("Connect lost: %v", err)
-		}
-
 		homeAssistantSetPossitionMessagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 			ha.log.Debugf("Received set position message: %s from topic: %s", msg.Payload(), msg.Topic())
 
@@ -152,7 +144,7 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 	opts.SetUsername(ha.mqttUserName)
 	opts.SetPassword(ha.mqttPassword)
 	opts.SetDefaultPublishHandler(messagePubHandler)
-	opts.OnConnect = connectHandler
+	opts.OnConnect = connectHandler // subscribe topics when connected to the broker
 	opts.OnConnectionLost = connectLostHandler
 	tlsConfig := ha.newTlsConfig()
 	opts.SetTLSConfig(tlsConfig)
