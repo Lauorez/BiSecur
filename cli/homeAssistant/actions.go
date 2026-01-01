@@ -14,7 +14,6 @@ func (ha *HomeAssistanceMqttClient) autoLoginBisecur() error {
 		ha.log.Info("Token expired.")
 		return ha.forceReLogin()
 	}
-
 	return nil
 }
 

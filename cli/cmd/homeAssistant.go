@@ -67,7 +67,7 @@ func init() {
 				cli.Log, localMac, mac, username, password, host, port, token,
 				mqttServerName, mqttClientId, mqttServerPort, mqttServerTls, mqttServerTlsValidaton,
 				mqttBaseTopic, mqttDeviceName, mqttUserName, mqttPassword, mqttTelePeriod, mqttTelePeriodFast,
-				devicePorts, doorStatusSupported,
+				utils.IntArrayToByteArray(devicePorts), doorStatusSupported,
 			)
 			if err != nil {
 				cli.Log.Fatalf("%v", err)

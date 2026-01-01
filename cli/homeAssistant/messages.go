@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (ha *HomeAssistanceMqttClient) getDiscoveryMessage(devicePort int) (string, error) {
+func (ha *HomeAssistanceMqttClient) getDiscoveryMessage(devicePort byte) (string, error) {
 	name := ha.getUniqueObjectId(devicePort)
 	uniqueId := ha.getUniqueObjectId(devicePort)
 	device_class := `"device_class": "garage",`
